@@ -1,31 +1,20 @@
 import React from 'react';
+import { EPAGES } from '../../App';
 
-
-enum EPages {
-  Graph2D,
-}
+import './Header.css';
 
 type THeader = {
-  setPageName: (name: EPages) => void;
-};
+    setPageName: (name: EPAGES) => void;
+}
 
-const Header: React.FC<THeader> = ({ setPageName }) => {
-  const handlePageChange = (page: EPages) => {
-    setPageName(page);
-  };
+const Header: React.FC<THeader> = (props: THeader) => {
+    const { setPageName } = props;
 
-  return (
-    <div className="header">
-      <h1>Моя приложение</h1>
-      <nav>
-        <ul>
-          <li>
-            <button onClick={() => handlePageChange(EPages.Graph2D)}>Graph2D</button>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  );
-};
+    return (<>
+        <h1>Итоговая работа</h1>
+        <button onClick={() => setPageName(EPAGES.UNIVERSAL_CALCULATOR)} className='HeaderBtn'>Калькулятор</button>
+        <button onClick={() => setPageName(EPAGES.GRAPH_2D)} className='HeaderBtn'>Графика 2д</button>
+    </>);
+}
 
 export default Header;

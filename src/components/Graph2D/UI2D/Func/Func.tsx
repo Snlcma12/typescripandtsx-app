@@ -1,36 +1,30 @@
-import React from "react";
+import React, { KeyboardEvent } from "react";
+import { TFunction } from "../../Graph2D";
+import { TUI2D } from "../UI2D";
 
-interface FuncProps {
-    func: { f: (x: number) => number; color: string; width: number; };
-    changeFunction: () => void;
+type TFunc = Omit<TUI2D, 'funcs'> & { 
+    func: TFunction;
 }
 
-class Func extends React.Component<FuncProps> {
-    constructor(props: FuncProps) {
-        super(props);
-    }
+const Func: React.FC<TFunc> = (props: TFunc) => {
+    const { func, changeFunction } = props;
 
-    keyupHandler(event: React.KeyboardEvent<HTMLInputElement>) {
+    const keyupHandler = (event: KeyboardEvent<HTMLInputElement>) => {
         try {
-            let f;
+            let f = (x: number) => 0;
             eval(`f = function(x) {return ${event.currentTarget.value};}`);
-            // @ts-ignore
-            this.props.func.f = f;
-            this.props.changeFunction();
+            func.f = f;
+            changeFunction();
         } catch (e) {
-            console.log('ошибка ввода', e);
+            //console.log('ошибка ввода', e);
         }
     }
 
-    render() {
-        return (
-            <div>
-                <input onKeyUp={(event) => this.keyupHandler(event)} placeholder="f(x)" />
-                <input placeholder="color" />
-                <input placeholder="width" />
-            </div>
-        );
-    }
+    return (<div>
+        <input onKeyUp={keyupHandler} placeholder="f(x)" />
+        <input placeholder="color" />
+        <input placeholder="width" />
+    </div>);
 }
 
-export default Func;
+export default Func
