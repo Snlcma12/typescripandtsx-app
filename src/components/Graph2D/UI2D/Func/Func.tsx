@@ -1,6 +1,7 @@
 import React, { KeyboardEvent } from "react";
 import { TFunction } from "../../Graph2D";
 import { TUI2D } from "../UI2D";
+import { render } from "@testing-library/react";
 
 type TFunc = Omit<TUI2D, 'funcs'> & { 
     func: TFunction;
@@ -20,6 +21,17 @@ const Func: React.FC<TFunc> = (props: TFunc) => {
         }
     }
 
+   
+
+
+
+
+
+
+
+
+
+    
     return (<div>
         <input onKeyUp={keyupHandler} placeholder="f(x)" />
         <input placeholder="color" />

@@ -30,6 +30,10 @@ const Graph2D: React.FC = () => {
 
 
 
+
+
+
+
     const ZOOM_STEP = 1; 
 
     const wheel = (event: WheelEvent): void => {
@@ -43,25 +47,20 @@ const Graph2D: React.FC = () => {
         }
     }
     
-    const mouseup = (): void => {
+    const mouseup = () => {
         canMove = false;
     }
     
-    const mouseout = (): void => {
+    const mouseout = () => {
         canMove = false;
     }
     
-    const mousedown = (event: MouseEvent, graph: Graph): void => {
-        const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-        if (!canvas) return;
-
-        const canvasRect: DOMRect = canvas.getBoundingClientRect();
-       
-        renderFrame();
+    const mousedown = () => {
+        canMove = true;
     }
     
-    const mousemove = (event: MouseEvent, graph: Graph): void => {
-        if (canMove) {
+    const mousemove = (event: MouseEvent) => {
+        if (canMove && graph) {
             WIN.LEFT -= graph.sx(event.movementX);
             WIN.BOTTOM -= graph.sy(event.movementY);
             renderFrame();
@@ -128,9 +127,9 @@ const Graph2D: React.FC = () => {
             height: 500,
             callbacks: {
                 wheel,
-                mousemove: (event: MouseEvent) => mousemove(event, graph as Graph),
+                mousemove,
                 mouseup,
-                mousedown: (event: MouseEvent) => mousedown(event, graph as Graph),
+                mousedown,
                 mouseout,
             }
         });
@@ -148,6 +147,7 @@ const Graph2D: React.FC = () => {
             <UI2D
                 funcs={funcs}
                 changeFunction={changeFunction}
+
             />
         </div>
     );

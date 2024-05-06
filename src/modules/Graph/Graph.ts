@@ -1,6 +1,4 @@
-import React, { FC } from 'react';
-
-interface GraphProps {
+export interface GraphProps {
   id?: string;
   WIN: {
     LEFT: number;

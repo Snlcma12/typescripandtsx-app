@@ -1,4 +1,4 @@
-import Graph from "./Graph";
+import Graph, { GraphProps } from "./Graph";
 
 declare global {
     interface Window {
@@ -23,7 +23,7 @@ declare global {
     }
 }
 
-const useGraph = (renderScene: (FPS: number) => void): [() => Graph, () => void] => {
+const useGraph = (renderScene: (FPS: number) => void): [(options: GraphProps) => Graph, () => void] => {
     let graph: Graph | null = null;
     let animationFrameId: number = 0;
 
@@ -42,7 +42,7 @@ const useGraph = (renderScene: (FPS: number) => void): [() => Graph, () => void]
         animationFrameId = window.requestAnimFrame(renderLoop);
     }
 
-    const getGraph = (options: any): Graph => {
+    const getGraph = (options: GraphProps): Graph => {
         graph = new Graph(options);
         renderLoop();
         return graph;
@@ -53,11 +53,10 @@ const useGraph = (renderScene: (FPS: number) => void): [() => Graph, () => void]
         graph = null;
     };
 
-    return {
-        // @ts-ignore
-        getGraph: getGraph,
-        cancelGraph: cancelGraph
-    };
+    return [
+        getGraph,
+        cancelGraph
+    ];
 }
 
 export default useGraph;

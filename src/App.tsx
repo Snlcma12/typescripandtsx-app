@@ -6,9 +6,6 @@ import UniversalCalculator from "./components/UniversalCalculator/UniversalCalcu
 import "./App.css";
 
 export enum EPAGES {
-    ESSAY = 'Essay',
-    TARGET_SHOOTER = 'TargetShooter',
-    STUDENT_SIMULATOR = 'StudentSimulator',
     UNIVERSAL_CALCULATOR = 'UniversalCalculator',
     GRAPH_2D = 'Graph2D',
 }
