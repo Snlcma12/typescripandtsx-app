@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { TFunction } from "../Graph2D";
+import useMyFunction from "./hooks/useMyFunction";
 import Func from "./Func/Func";
 
 export type TUI2D = {
     funcs: TFunction[];
     //funcs: Array<TFunction>;
-    changeFunction: () => void;
+    reRender: () => void;
 }
 
 const UI2D: React.FC<TUI2D> = (props: TUI2D) => {
-    const { funcs, changeFunction } = props;
+    const { funcs, reRender } = props;
     const [count, setCount] = useState<number>(funcs.length);
+    const [getFunction] = useMyFunction();
 
-    const addFunctionHandler = () => {
+    const addFunction = () => {
         const func = {
-            f: (x: number) => 0,
+            f: getFunction('0'),
             color: 'black',
             width: 2
         };
@@ -22,17 +24,25 @@ const UI2D: React.FC<TUI2D> = (props: TUI2D) => {
         setCount(funcs.length);
     }
 
+    const delFunction = (index: number) => {
+        funcs.splice(index, 1);
+        setCount(funcs.length);
+        reRender();
+    }
+
     return (<>
         <button
             className="beautyButton"
-            onClick={addFunctionHandler}
+            onClick={addFunction}
         >+</button>
         <div>{
             funcs.map((func, index) =>
                 <Func
-                    key={index}
+                    key={`${index}${Math.random().toString()}`}
+                    index={index}
                     func={func}
-                    changeFunction={changeFunction}
+                    reRender={reRender}
+                    delFunction={delFunction}
                 />
             )
         }</div>

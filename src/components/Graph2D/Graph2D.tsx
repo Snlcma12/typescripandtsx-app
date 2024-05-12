@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import Graph from '../../modules/Graph/Graph';
 import UI2D from "./UI2D/UI2D";
 
+export type TF = (x: number) => number;
 
-type TF = (x: number) => number;
 
 export type TFunction = {
     f: TF;
@@ -67,6 +67,10 @@ const Graph2D: React.FC = () => {
         }
     }
 
+    const reRender = () => {
+        renderFrame();
+    }
+
     const printFunction = (f: TF, color: string, strWidth: number, n = 200): void => {
         if (!graph) {
             return;
@@ -86,6 +90,8 @@ const Graph2D: React.FC = () => {
             x += dx;
         };
     };
+
+    
 
     const coordOs = (): void => { 
         if (!graph) {
@@ -146,8 +152,7 @@ const Graph2D: React.FC = () => {
             </div>
             <UI2D
                 funcs={funcs}
-                changeFunction={changeFunction}
-
+                reRender={reRender}
             />
         </div>
     );

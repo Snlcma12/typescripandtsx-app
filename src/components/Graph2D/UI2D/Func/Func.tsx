@@ -1,41 +1,55 @@
 import React, { KeyboardEvent } from "react";
 import { TFunction } from "../../Graph2D";
 import { TUI2D } from "../UI2D";
-import { render } from "@testing-library/react";
+import useMyFunction from "../hooks/useMyFunction";
 
 type TFunc = Omit<TUI2D, 'funcs'> & { 
     func: TFunction;
+    delFunction: (index: number) => void;
+    index: number;
 }
 
 const Func: React.FC<TFunc> = (props: TFunc) => {
-    const { func, changeFunction } = props;
+    const { func, reRender, delFunction, index } = props;
+    const [getFunction, getFunctionBody] = useMyFunction();
 
-    const keyupHandler = (event: KeyboardEvent<HTMLInputElement>) => {
-        try {
-            let f = (x: number) => 0;
-            eval(`f = function(x) {return ${event.currentTarget.value};}`);
-            func.f = f;
-            changeFunction();
-        } catch (e) {
-            //console.log('ошибка ввода', e);
-        }
+    const changeFunction = (event: KeyboardEvent<HTMLInputElement>) => {
+        func.f = getFunction(event.currentTarget.value);
+        reRender();
     }
 
-   
+    const changeColor = (event: KeyboardEvent<HTMLInputElement>) => {
+        const color = event.currentTarget.value;
+        func.color = color;
+        reRender();
+    }
 
-
-
-
-
-
-
-
-
+    const changeWidth = (event: KeyboardEvent<HTMLInputElement>) => {
+        const width = parseInt(event.currentTarget.value);
+        if (!isNaN(width)) {
+            func.width = width;
+            reRender();
+        }
+    }
     
+
     return (<div>
-        <input onKeyUp={keyupHandler} placeholder="f(x)" />
-        <input placeholder="color" />
-        <input placeholder="width" />
+        <input 
+            placeholder="f(x)" 
+            onKeyUp={changeFunction} 
+            defaultValue={getFunctionBody(func.f)}
+        />
+        <input 
+            placeholder="color" 
+            onKeyUp={changeColor} 
+            defaultValue={func.color}
+        />
+        <input 
+            placeholder="width" 
+            onKeyUp={changeWidth} 
+            defaultValue={func.width}
+        />
+        <button onClick={() => delFunction(index)}>delete</button>
     </div>);
 }
 

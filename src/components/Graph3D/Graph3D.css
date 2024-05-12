@@ -1,0 +1,12 @@
+#Graph3D {
+    position: absolute;
+    top: 200px;
+    left: 10px; /* Устанавливаем отступ слева */
+}
+
+.controls-wrapper {
+    position: absolute;
+    top: 790px; /* Устанавливаем отступ сверху */
+    left: 10px; /* Устанавливаем отступ слева */
+}
+
