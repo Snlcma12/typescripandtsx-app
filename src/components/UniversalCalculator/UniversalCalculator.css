@@ -1,5 +1,95 @@
+.operands-block {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+}
+
+
+.operand {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    text-align: center;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #F2F5FA;
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+}
+
+header {
+    background-color: #66B2FF;
+    text-align: center;
+    padding: 20px 0;
+}
+
+header h1 {
+    color: whitesmoke;
+    font-size: 24px;
+    margin: 0;
+}
+
+h3 {
+    color: #606060;
+}
+
+main {
+
+    gap: 10px;
     padding: 20px;
-  }
+    text-align: center;
+}
+
+.block {
+    border: 1px transparent;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: #c6cbda;
+    padding: 20px;
+    text-align: center;
+}
+
+.block_ {
+
+    gap: 10px;
+    background-color: #F2F5FA;
+    padding: 20px;
+    text-align: center;
+}
+
+input, select {
+    width: 150px;
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #66B2FF;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.CalcBtn {
+    background-color: #66B2FF;
+    color: #FFFFFF;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.CalcBtn:hover {
+    background-color: #FF6666;
+}
+
+.area {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #66B2FF;
+    border-radius: 5px;
+    font-size: 18px;
+}

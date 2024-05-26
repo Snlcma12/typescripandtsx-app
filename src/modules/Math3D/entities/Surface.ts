@@ -1,20 +1,23 @@
+import Math3D, { ETransfrom } from "../Math3D";
+import Edge from "./Edge";
 import Point from "./Point";
+import Polygon from "./Polygon";
 
-interface Animation {
-    method: string;
-    value: number;
+type TAnimation = {
+    method: ETransfrom; 
+    value: number; 
     center: Point;
 }
 
 class Surface {
     points: Point[];
-    edges: any[];
-    polygons: any[];
+    edges: Edge[];
+    polygons: Polygon[];
     center: Point;
     bulge: boolean;
-    animations: Animation[];
+    animations: TAnimation[];
 
-    constructor(points: Point[] = [], edges: any[] = [], polygons: any[] = [], center: Point = new Point(), bulge: boolean = true) {
+    constructor(points = [], edges = [], polygons = [], center = new Point(), bulge = true) {
         this.points = points;
         this.edges = edges;
         this.polygons = polygons;
@@ -27,18 +30,18 @@ class Surface {
         this.animations = [];
     }
 
-    addAnimation(method: string, value: number, center: Point): void {
+    addAnimation(method: ETransfrom, value: number, center: Point): void {
         this.animations.push({ method, value, center });
     }
 
-    doAnimation(math3D: any): void {
+    doAnimation(math3D: Math3D): void {
         this.animations.forEach(animation => {
-            const T1 = math3D.getMoveT(-animation.center.x, -animation.center.y, -animation.center.z);
+            const T1 = math3D.move(-animation.center.x, -animation.center.y, -animation.center.z);
             const T2 = math3D[animation.method](animation.value);
-            const T3 = math3D.getMoveT(animation.center.x, animation.center.y, animation.center.z)
+            const T3 = math3D.move(animation.center.x, animation.center.y, animation.center.z)
             const matrix = math3D.getTransform(T1, T2, T3);
-            math3D.transformPoint(this.center, matrix);
-            this.points.forEach(point => math3D.transformPoint(point, matrix));
+            math3D.transform(this.center, matrix);
+            this.points.forEach(point => math3D.transform(point, matrix));
         });
     }
 }

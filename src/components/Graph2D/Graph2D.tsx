@@ -2,8 +2,9 @@ import React, { useEffect } from "react";
 import Graph from '../../modules/Graph/Graph';
 import UI2D from "./UI2D/UI2D";
 
-export type TF = (x: number) => number;
+import './Graph2D.css';
 
+export type TF = (x: number) => number;
 
 export type TFunction = {
     f: TF;
@@ -22,50 +23,11 @@ const Graph2D: React.FC = () => {
     let canMove = false;
     let graph: Graph | null = null;
 
-    
-
-    const changeFunction = () => {
-        renderFrame();
-    }
-
-
-
-
-
-
-
-    const ZOOM_STEP = 1; 
-
-    const wheel = (event: WheelEvent): void => {
-        const delta: number = (event.deltaY > 0) ? -ZOOM_STEP : ZOOM_STEP;
-        if (WIN.WIDTH + delta > 0) {
-            WIN.WIDTH += delta;
-            WIN.HEIGHT += delta;
-            WIN.LEFT -= delta / 2;
-            WIN.BOTTOM -= delta / 2;
-            renderFrame();
-        }
-    }
-    
-    const mouseup = () => {
-        canMove = false;
-    }
-    
-    const mouseout = () => {
-        canMove = false;
-    }
-    
-    const mousedown = () => {
-        canMove = true;
-    }
-    
-    const mousemove = (event: MouseEvent) => {
-        if (canMove && graph) {
-            WIN.LEFT -= graph.sx(event.movementX);
-            WIN.BOTTOM -= graph.sy(event.movementY);
-            renderFrame();
-        }
-    }
+    const wheel = (event: WheelEvent) => { }
+    const mouseup = () => { }
+    const mousedown = (event: MouseEvent) => { }
+    const mousemove = (event: MouseEvent) => { }
+    const mouseout = () => { }
 
     const reRender = () => {
         renderFrame();
@@ -91,36 +53,11 @@ const Graph2D: React.FC = () => {
         };
     };
 
-    
-
-    const coordOs = (): void => { 
-        if (!graph) {
-            return;
-        }
-        for (let i: number = 0; i <= WIN.WIDTH; i++) { 
-            graph.line(i, WIN.BOTTOM, i, WIN.BOTTOM + WIN.HEIGHT, 'gray'); 
-        }
-        for (let i: number = 0; i <= WIN.HEIGHT; i++) { 
-            graph.line(WIN.LEFT, i, WIN.LEFT + WIN.WIDTH, i, 'gray'); 
-        }
-        for (let i: number = 0; i >= WIN.LEFT; i--) { 
-            graph.line(i, WIN.BOTTOM, i, WIN.BOTTOM + WIN.HEIGHT, 'gray'); 
-        }
-        for (let i: number = 0; i >= WIN.BOTTOM; i--) { 
-            graph.line(WIN.LEFT, i, WIN.LEFT + WIN.WIDTH, i, 'gray'); 
-        }
-    
-        graph.line(WIN.LEFT, 0, WIN.LEFT + WIN.WIDTH, 0, 'black');
-        graph.line(0, WIN.BOTTOM, 0, WIN.HEIGHT + WIN.BOTTOM, 'black');
-    }
-    
-
     const renderFrame = () => {
         if (!graph) {
             return;
         }
         graph.clear();
-        coordOs();
         funcs.forEach(func => printFunction(func.f, func.color, func.width));
         graph.renderFrame();
     }

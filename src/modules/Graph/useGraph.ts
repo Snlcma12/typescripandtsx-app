@@ -1,62 +1,60 @@
-import Graph, { GraphProps } from "./Graph";
+import Graph, { TGraph } from "./Graph";
 
 declare global {
     interface Window {
-        requestAnimFrame: (
-            callback: FrameRequestCallback
-        ) => number;
-        webkitRequestAnimationFrame: (
-            callback: FrameRequestCallback
-        ) => number;
-        mozRequestAnimationFrame: (
-            callback: FrameRequestCallback
-        ) => number;
-        oRequestAnimationFrame: (
-            callback: FrameRequestCallback
-        ) => number;
-        msRequestAnimationFrame: (
-            callback: FrameRequestCallback
-        ) => number;
-        cancelAnimationFrame: (
-            handle: number
-        ) => void;
+        requestAnimFrame: (callback: FrameRequestCallback) => number;
+        requestAnimationFrame: (callback: FrameRequestCallback) => number;
+        webkitRequestAnimationFrame: (callback: FrameRequestCallback) => number;
+        mozRequestAnimationFrame: (callback: FrameRequestCallback) => number;
+        oRequestAnimationFrame: (callback: FrameRequestCallback) => number;
+        msRequestAnimationFrame: (callback: FrameRequestCallback) => number;
     }
 }
 
-const useGraph = (renderScene: (FPS: number) => void): [(options: GraphProps) => Graph, () => void] => {
-    let graph: Graph | null = null;
-    let animationFrameId: number = 0;
+window.requestAnimFrame = (function () {
+    return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+})();
 
-    let FPS: number = 0;
-    let countFPS: number = 0;
-    let timestamp: number = Date.now();
-    const renderLoop = (): void => {
+const useGraph = (
+    renderScene: (FPS: number) => void
+): [(options: TGraph) => Graph | null, () => void] => {
+    let graph: Graph | null = null;
+    let FPS = 0;
+    let countFPS = 0;
+    let timestamp = Date.now();
+    let id: number;
+
+    const renderLoop = () => {
         countFPS += 1;
-        const currentTimestamp: number = Date.now();
+        const currentTimestamp = Date.now();
         if (currentTimestamp - timestamp >= 1000) {
             FPS = countFPS;
             countFPS = 0;
             timestamp = currentTimestamp;
         }
         renderScene(FPS);
-        animationFrameId = window.requestAnimFrame(renderLoop);
+        id = window.requestAnimFrame(renderLoop);
     }
 
-    const getGraph = (options: GraphProps): Graph => {
+    const getGraph = (options: TGraph): Graph | null => {
         graph = new Graph(options);
         renderLoop();
         return graph;
     };
 
     const cancelGraph = (): void => {
-        window.cancelAnimationFrame(animationFrameId);
+        window.cancelAnimationFrame(id);
         graph = null;
     };
 
-    return [
-        getGraph,
-        cancelGraph
-    ];
+    return [getGraph, cancelGraph];
 }
 
 export default useGraph;

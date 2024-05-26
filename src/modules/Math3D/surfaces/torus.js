@@ -1,19 +1,19 @@
+import Surfaces from "./Surfaces";
 import Point from "../entities/Point";
 import Edge from "../entities/Edge";
 import Polygon from "../entities/Polygon";
-import Surface from "../entities/Surface";
 
-class Torus extends Surface {
-    constructor({
-        point = new Point(0, 0, 0),
-        majorRadius = 10,
-        minorRadius = 4,
-        scale = 1,
-        color = '#888888',
-        majorSegments = 20,
-        minorSegments = 10
-    }) {
-        super();
+Surfaces.prototype.torus =
+    ({
+         point = new Point(0, 0, 0),
+         majorRadius = 10,  // большой радиус (расстояние от центра тора до центра трубки)
+         minorRadius = 4,   // малый радиус (радиус трубки)
+         scale = 1,
+         color = '#888888',
+         majorSegments = 20, // количество сегментов вокруг большого круга
+         minorSegments = 10 // количество сегментов вокруг малого круга
+    }) => {
+
         majorRadius = Math.abs(majorRadius) * scale;
         minorRadius = Math.abs(minorRadius) * scale;
 
@@ -46,11 +46,11 @@ class Torus extends Surface {
             }
         }
 
-        this.points = points;
-        this.edges = edges;
-        this.polygons = polygons;
-        this.point = point;
-        this.closed = true;
+        return new Surface(
+            points,
+            edges,
+            polygons,
+            point,
+            true
+        );
     }
-}
-export default Torus;

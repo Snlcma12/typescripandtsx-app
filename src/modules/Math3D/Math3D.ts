@@ -1,63 +1,41 @@
+import { TWIN3D } from "../Graph/Graph";
 import Point from "./entities/Point";
-import Polygon from "./entities/Polygon";
 
-type TMath3D = {
-    WIN: TWIN3D;
-};
-
-interface TWIN3D {
-    CENTER: Point;
-    CAMERA: Point;
-}
 
 type TMatrix = number[][];
 type TVector = number[];
-
+type TPolygon = {
+    points: number[];
+    center?: Point;
+    R?: number;
+    distance?: number;
+    visibility?: boolean;
+    lumen?: number;
+    [key: string]: any; 
+}
+type TSurface = {
+    points: Point[];
+    polygons: TPolygon[];
+}
 type TShadow = {
     isShadow: boolean;
     dark?: number;
-};
+}
 
-export enum ETransform {
+export enum ETransfrom {
     zoom = 'zoom',
     move = 'move',
-    rotateOx = 'rotateOx',
-    rotateOy = 'rotateOy',
-    rotateOz = 'rotateOz',
+    rotateOX = 'rotateOX',
+    rotateOY = 'rotateOY',
+    rotateOZ = 'rotateOZ',
 }
 
 class Math3D {
-    private WIN: TWIN3D;
-    private plane: {
-        worldCenter: Point;
-        screenCenter: Point;
-        camera: Point;
-    };
+    WIN: TWIN3D;
+    calcRadius: any;
 
     constructor(WIN: TWIN3D) {
         this.WIN = WIN;
-        this.plane = {
-            worldCenter: new Point(),
-            screenCenter: new Point(),
-            camera: new Point()
-        };
-    }
-
-    calcPlaneEquation(camera: Point, screenCenter: Point): void {
-        const vector = new Point(
-            screenCenter.x - camera.x,
-            screenCenter.y - camera.y,
-            screenCenter.z - camera.z
-        );
-        this.plane.worldCenter.x = vector.x;
-        this.plane.worldCenter.y = vector.y;
-        this.plane.worldCenter.z = vector.z;
-        this.plane.screenCenter.x = screenCenter.x;
-        this.plane.screenCenter.y = screenCenter.y;
-        this.plane.screenCenter.z = screenCenter.z;
-        this.plane.camera.x = camera.x;
-        this.plane.camera.y = camera.y;
-        this.plane.camera.z = camera.z;
     }
 
     xs(point: Point): number {
@@ -75,11 +53,11 @@ class Math3D {
     }
 
     sin(a: number): number {
-        return Math.sin(a);
+        return Math.sin(a)
     }
 
     cos(a: number): number {
-        return Math.cos(a);
+        return Math.cos(a)
     }
 
     multMatrix(a: TMatrix, b: TMatrix): TMatrix {
@@ -128,16 +106,33 @@ class Math3D {
         point.z = array[2];
     }
 
-    getZoomMatrix(delta: number): TMatrix {
+    
+
+    
+
+    
+
+    
+
+    [ETransfrom.zoom](delta: number): TMatrix {
         return [
             [delta, 0, 0, 0],
             [0, delta, 0, 0],
             [0, 0, delta, 0],
-            [0, 0, 0, delta]
+            [0, 0, 0, 1]
         ];
     }
 
-    getOxRotateT(alpha: number): TMatrix {
+    [ETransfrom.move](dx = 0, dy = 0, dz = 0): TMatrix {
+        return [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [dx, dy, dz, 1]
+        ];
+    }
+
+    [ETransfrom.rotateOX](alpha: number): TMatrix {
         return [
             [1, 0, 0, 0],
             [0, Math.cos(alpha), Math.sin(alpha), 0],
@@ -146,7 +141,7 @@ class Math3D {
         ];
     }
 
-    getOyRotateT(alpha: number): TMatrix {
+    [ETransfrom.rotateOY](alpha: number): TMatrix {
         return [
             [Math.cos(alpha), 0, -Math.sin(alpha), 0],
             [0, 1, 0, 0],
@@ -155,21 +150,12 @@ class Math3D {
         ];
     }
 
-    getOzRotateT(alpha: number): TMatrix {
-        return [
-            [Math.cos(alpha), Math.sin(alpha), 0, 0],
-            [-Math.sin(alpha), Math.cos(alpha), 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
-        ];
-    }
-
-    getMoveT({ dx = 0, dy = 0, dz = 0 }: { dx?: number; dy?: number; dz?: number }): TMatrix {
+    [ETransfrom.rotateOZ](alpha: number): TMatrix {
         return [
             [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [dx, dy, dz, 1]
+            [0, Math.cos(alpha), Math.sin(alpha), 0],
+            [0, -Math.sin(alpha), Math.cos(alpha), 0],
+            [0, 0, 0, 1]
         ];
     }
 
@@ -182,7 +168,15 @@ class Math3D {
         ];
     }
 
-    findPolygonCenter(polygon: Polygon, surface: { points: Point[] }): Point {
+    transform(point: Point, T: TMatrix): void {
+        const array = this.multPoint(T, [point.x, point.y, point.z, 1]);
+        point.x = array[0];
+        point.y = array[1];
+        point.z = array[2];
+    }
+
+
+    findPolygonCenter(polygon: TPolygon, surface: TSurface): { x: number, y: number, z: number } {
         let x = 0, y = 0, z = 0;
         polygon.points.forEach((index: number) => {
             x += surface.points[index].x;
@@ -192,26 +186,28 @@ class Math3D {
         x /= polygon.points.length;
         y /= polygon.points.length;
         z /= polygon.points.length;
-        return new Point(x, y, z);
+        return { x, y, z };
     }
 
-    calcDistance(surface: { polygons: Polygon[] }, CAMERA: Point, name: string): void {
-        surface.polygons.forEach((polygon: Polygon) => {
-            const distance = this.distance(polygon.center, CAMERA);
+    calcDistance(surface: TSurface, endPoint: Point, name: string): void {
+        surface.polygons.forEach((polygon: TPolygon) => {
+            const { x, y, z } = this.findPolygonCenter(polygon, surface);
             polygon[name] = Math.sqrt(
-                distance.x ** 2 + distance.y ** 2 + distance.z ** 2
+                (endPoint.x - x) ** 2 +
+                (endPoint.y - y) ** 2 +
+                (endPoint.z - z) ** 2
             );
         });
     }
 
-    sortByArtistAlgorithm(polygons: Polygon[]): void {
-        polygons.sort((a, b) => (a.distance! < b.distance!) ? 1 : -1);
+    sortByArtistAlgorithm(polygons: TPolygon[]): void {
+        polygons.sort((a: TPolygon, b: TPolygon) => (a.distance! < b.distance!) ? 1 : -1);
     }
 
-    calcVisibility(surface: { polygons: Polygon[] }, CAMERA: Point): void {
+    calcVisibility(surface: TSurface, CAMERA: Point): void {
         const points = surface.points;
-        surface.polygons.forEach((polygon: Polygon) => {
-            const p0 = polygon.center;
+        surface.polygons.forEach((polygon: TPolygon) => {
+            const p0 = polygon.center!;
             const p1 = points[polygon.points[1]];
             const p2 = points[polygon.points[2]];
             const a = this.getVector(p0, p1);
@@ -226,32 +222,32 @@ class Math3D {
         return illumination > 1 ? 1 : illumination;
     }
 
-    getVector(a: Point, b: Point): Point {
-        return new Point(
-            b.x - a.x,
-            b.y - a.y,
-            b.z - a.z
-        );
+    getVector(a: Point, b: Point): { x: number, y: number, z: number } {
+        return {
+            x: b.x - a.x,
+            y: b.y - a.y,
+            z: b.z - a.z
+        }
     }
 
-    multVector(a: Point, b: Point): Point {
-        return new Point(
-            a.y * b.z - a.z * b.y,
-            -a.x * b.z + a.z * b.x,
-            a.x * b.y - a.y * b.x
-        );
+    multVector(a: { x: number, y: number, z: number }, b: { x: number, y: number, z: number }): { x: number, y: number, z: number } {
+        return {
+            x: a.y * b.z - a.z * b.y,
+            y: -a.x * b.z + a.z * b.x,
+            z: a.x * b.y - a.y * b.x
+        }
     }
 
-    scalMultVector(a: Point, b: Point): number {
+    scalMultVector(a: { x: number, y: number, z: number }, b: { x: number, y: number, z: number }): number {
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 
-    moduleVector(a: Point): number {
+    moduleVector(a: { x: number, y: number, z: number }): number {
         return Math.sqrt(a.x ** 2 + a.y ** 2 + a.z ** 2);
     }
 
-    calcCenter(surface: { polygons: Polygon[] }): void {
-        surface.polygons.forEach((polygon: Polygon) => {
+    calcCenter(surface: TSurface): void {
+        surface.polygons.forEach((polygon: TPolygon) => {
             let x = 0, y = 0, z = 0;
             polygon.points.forEach((index: number) => {
                 x += surface.points[index].x;
@@ -265,47 +261,41 @@ class Math3D {
         });
     }
 
-    calcRadius(surface: { polygons: Polygon[] }): void {
-        const points = surface.points;
-        surface.polygons.forEach((polygon: Polygon) => {
-            const center = polygon.center;
-            const p1 = points[polygon.points[0]];
-            const p2 = points[polygon.points[1]];
-            const p3 = points[polygon.points[2]];
-            const p4 = points[polygon.points[3]];
-            polygon.R = (this.moduleVector(this.getVector(center, p1))
-                + this.moduleVector(this.getVector(center, p2))
-                + this.moduleVector(this.getVector(center, p3))
-                + this.moduleVector(this.getVector(center, p4)))
-                / 4;
-        });
-    }
-
-    calcShadow(polygon: Polygon, scene: { polygons: Polygon[] }[], LIGHT: Point): TShadow {
-        const result: TShadow = { isShadow: false };
-        const m1 = polygon.center;
-        const r = polygon.R;
-        const S = this.getVector(m1, LIGHT);
-        scene.forEach((surface, index) => {
-            if (polygon.index === index) return;
-            surface.polygons.forEach((polygon2: Polygon) => {
-                const m0 = polygon2.center;
-                if (m1.x === m0.x && m1.y === m0.y && m1.z === m0.z) return;
-                if (polygon2.lumen > polygon.lumen) return;
-                const dark = this.moduleVector(
-                    this.multVector(
-                        this.getVector(m0, m1),
-                        S
-                    )
-                ) / this.moduleVector(S);
-
-                if (dark < r) {
-                    result.isShadow = true;
-                    result.dark = 0.7;
+    calcShadow(polygon: TPolygon, subject: TSurface, light: Point, dark: number = 0, isShadow: boolean = false): TShadow {
+        if (isShadow) {
+            for (let i = 0; i < subject.polygons.length; i++) {
+                if (subject.polygons[i].visibility) {
+                    const T = subject.polygons[i];
+                    for (let j = 0; j < T.points.length; j++) {
+                        const A = subject.points[T.points[j]];
+                        const B = light;
+                        const C = polygon.center!;
+                        if (this.checkInTriangle(A, B, C)) {
+                            return { isShadow: true, dark };
+                        }
+                    }
                 }
-            });
-        });
-        return result;
+            }
+        }
+        return { isShadow: false };
+    }
+    
+   
+
+    checkInTriangle(A: Point, B: Point, C: Point): boolean {
+        const AB = this.getVector(A, B);
+        const AC = this.getVector(A, C);
+        const BC = this.getVector(B, C);
+        const n = this.multVector(AB, AC);
+        const N = this.moduleVector(n);
+        const PA = this.moduleVector(AB);
+        const PB = this.moduleVector(BC);
+        const PC = this.moduleVector(AC);
+        const S = N / 2;
+        const Sa = S / PA;
+        const Sb = S / PB;
+        const Sc = S / PC;
+        return (Sa + Sb + Sc).toFixed(5) === S.toFixed(5);
     }
 }
 

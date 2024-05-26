@@ -11,7 +11,7 @@ class Sphere extends Surface {
         color = '#888888',
         segments = 10
     }) {
-        super({});
+        super();
         radius = Math.abs(radius) * scale;
         const points = [];
         const edges = [];

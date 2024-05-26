@@ -25,13 +25,8 @@ const Func: React.FC<TFunc> = (props: TFunc) => {
     }
 
     const changeWidth = (event: KeyboardEvent<HTMLInputElement>) => {
-        const width = parseInt(event.currentTarget.value);
-        if (!isNaN(width)) {
-            func.width = width;
-            reRender();
-        }
+
     }
-    
 
     return (<div>
         <input 

@@ -1,27 +1,33 @@
-class Polygon {
-    points: number[][];
-    color: { r: number, g: number, b: number };
-    distance: number | null;
-    lumen: number | null;
-    center: number[] | null;
-    norm: number[] | null;
-    index: number | null;
-    R: number | null;
-    visibility: boolean;
+import Point from "./Point";
 
-    constructor(points: number[][] = [], color: string = '#444444') {
+export type TRGB = {
+    r: number;
+    g: number;
+    b: number;
+}
+
+export enum EDistance {
+    distance = 'distance',
+    lumen = 'lumen',
+}
+
+class Polygon {
+    points: number[];
+    color: TRGB;
+    [EDistance.distance]: number = 0;
+    [EDistance.lumen]: number = 0;
+    center = new Point();
+    norm = new Point();
+    index = 0;
+    R = 0;
+    visibility = true;
+
+    constructor(points: number[] = [], color = '#444444') {
         this.points = points;
         this.color = this.hexToRgb(color);
-        this.distance = null;
-        this.lumen = null;
-        this.center = null;
-        this.norm = null;
-        this.index = null;
-        this.R = null;
-        this.visibility = true;
     }
 
-    hexToRgb(hex: string): { r: number, g: number, b: number } {
+    hexToRgb(hex: string): TRGB {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
             r: parseInt(result[1], 16),
@@ -31,7 +37,7 @@ class Polygon {
     }
 
     rgbToHex(r: number, g: number, b: number): string {
-        return `rgb(${r}, ${g}, ${b})`;
+        return `rgb(${r},${g},${b})`;
     }
 }
 
