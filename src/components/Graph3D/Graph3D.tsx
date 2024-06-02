@@ -1,25 +1,29 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Math3D from "../../modules/Math3D/Math3D";
 import useGraph from "../../modules/Graph/useGraph";
 import Graph, { TWIN3D } from "../../modules/Graph/Graph";
 import Point from "../../modules/Math3D/entities/Point";
 import Light from "../../modules/Math3D/entities/Light";
 import Sphere from "../../modules/Math3D/surfaces/sphere";
+import Torus from "../../modules/Math3D/surfaces/torus";
+import Ellipsoid from "../../modules/Math3D/surfaces/Ellipsoid";
+import EllipticalCylinder from "../../modules/Math3D/surfaces/EllipticalCylinder";
+import EllipticalParaboloid from "../../modules/Math3D/surfaces/EllipticalParaboloid";
+import HyperbolicParaboloid from "../../modules/Math3D/surfaces/HyperbolicParaboloid";
+import Cone from "../../modules/Math3D/surfaces/cone";
+import HyperbolicCylinder from "../../modules/Math3D/surfaces/HyperbolicCylinder";
+import OneWayHyperboloid from "../../modules/Math3D/surfaces/OneWayHyperboloid";
+import Cube from "../../modules/Math3D/surfaces/cube";
+import ParabolidCylinder from "../../modules/Math3D/surfaces/ParabolidCylinder";
 import Surface from "../../modules/Math3D/entities/Surface";
 import Polygon, { EDistance } from "../../modules/Math3D/entities/Polygon";
 
 import './Graph3D.css';
 
-
-
-
-
-
-
 const Graph3D: React.FC = () => {
     const graph3DViewPointsRef = useRef<HTMLInputElement>(null);
     const graph3DViewEdgesRef = useRef<HTMLInputElement>(null);
-    const graph3DViewPolygonsRef = useRef<HTMLInputElement>(null);
+    const polygonsOnly = useRef<HTMLInputElement>(null);
     const graph3DRotateLightRef = useRef<HTMLInputElement>(null);
     const graph3DPlayAnimationRef = useRef<HTMLInputElement>(null);
     const WIN: TWIN3D = {
@@ -30,11 +34,11 @@ const Graph3D: React.FC = () => {
         CENTER: new Point(0, 0, -40),
         CAMERA: new Point(0, 0, -50),
     };
+
     let graph: Graph | null = null;
     const [getGraph, cancelGraph] = useGraph(renderScene);
     const math3D = new Math3D(WIN);
     const LIGHT = new Light(-30, 20, -30, 1500);
-    let scene: Surface[] = [new Sphere({ color: '#ffff00' })];
     const gradus = Math.PI / 180 / 4;
     const zoomStep = 0.1;
     const moveStep = 4;
@@ -43,6 +47,52 @@ const Graph3D: React.FC = () => {
     let dx = 0;
     let dy = 0;
     let viewShadows = false;
+
+    const [scene, setScene] = useState<Surface[]>([new Sphere({ color: '#ffff00' })]);
+
+    function updateScene(type: string) {
+        switch (type) {
+            case "sphere":
+                setScene([new Sphere({})]);
+                break;
+            case "torus":
+                setScene([new Torus ({})]);
+                break;
+            case "Ellipsoid":
+                    setScene([new Ellipsoid({})]);
+                    break;
+            case "EllipticalCylinder":
+                    setScene([new EllipticalCylinder ({})]);
+                    break;
+            case "EllipticalParaboloid":
+                setScene([new EllipticalParaboloid({})]);
+                break;
+            case "HyperbolicParaboloid":
+                setScene([new HyperbolicParaboloid ({})]);
+                break;
+            case "cone":
+                    setScene([new Cone({})]);
+                    break;
+            case "HyperbolicCylinder":
+                setScene([new HyperbolicCylinder({})]);
+                break;
+            case "OneWayHyperboloid":
+                setScene([new OneWayHyperboloid ({})]);
+                break;
+            case "cube":
+                    setScene([new Cube({})]);
+                    break;
+            case "ParabolidCylinder":
+                    setScene([new ParabolidCylinder ({})]);
+                    break;
+            default:
+                setScene([new Sphere({})]);
+                break;
+        }
+    }
+
+
+ 
 
     function wheelHandler(event: WheelEvent) {
         event.preventDefault();
@@ -127,7 +177,7 @@ const Graph3D: React.FC = () => {
     }
 
     function clearScene() {
-        scene = [];
+        setScene([]);
     }
 
     function renderScene(FPS = 0) {
@@ -136,15 +186,12 @@ const Graph3D: React.FC = () => {
         }
         graph.clear();
         scene.forEach((surface) => {
-            if (graph3DViewPolygonsRef?.current?.value) {
+            if (polygonsOnly?.current?.checked) {
                 const polygons: Polygon[] = [];
                 scene.forEach((surface, index) => {
                     math3D.calcCenter(surface);
-                    math3D.calcRadius(surface);
                     math3D.calcDistance(surface, WIN.CAMERA, EDistance.distance);
                     math3D.calcDistance(surface, LIGHT, EDistance.lumen);
-                    if (surface.bulge)
-                        math3D.calcVisibility(surface, WIN.CAMERA);
                     surface.polygons.forEach(polygon => {
                         polygon.index = index;
                         polygons.push(polygon);
@@ -187,7 +234,6 @@ const Graph3D: React.FC = () => {
                     point => graph && graph.pointLite(math3D.xs(point), math3D.ys(point))
                 );
             }
-            graph && graph.drawSun(math3D.xs(LIGHT), math3D.ys(LIGHT));
         });
 
         graph.text(`fps: ${FPS}`, WIN.LEFT, WIN.BOTTOM - 1, 'black', '25');
@@ -208,17 +254,29 @@ const Graph3D: React.FC = () => {
                 mouseout: mouseoutHandler,
             }
         });
-        const interval = setInterval(() => {
-            if (graph3DPlayAnimationRef?.current?.checked) {
-                scene.forEach(surface => surface.doAnimation(math3D));
-            }
-        }, 20);
 
         return () => {
             cancelGraph();
-            clearInterval(interval);
+        };
+    }, [scene]);
+
+    useEffect(() => {
+        let FPS = 0;
+        let timestamp = Date.now();
+        const animLoop = () => {
+            FPS++;
+            const now = Date.now();
+            if (now - timestamp >= 1000) {
+                timestamp = now;
+                FPS = 0;
+            }
+            renderScene(FPS);
+            requestAnimationFrame(animLoop);
+        };
+        if (graph3DPlayAnimationRef?.current?.checked) {
+            animLoop();
         }
-    });
+    }, [graph3DPlayAnimationRef?.current?.checked]);
 
     return (<>
         <canvas id="Graph3D"></canvas>
@@ -230,7 +288,7 @@ const Graph3D: React.FC = () => {
                 <input ref={graph3DViewEdgesRef} type="checkbox" /> Отображать ребра
             </label>
             <label>
-                <input ref={graph3DViewPolygonsRef} type="checkbox" /> Отображать полигоны
+                <input ref={polygonsOnly} type="checkbox" /> Отображать полигоны
             </label>
             <label>
                 <input ref={graph3DRotateLightRef} type="checkbox" /> Вращать источник света
@@ -238,8 +296,23 @@ const Graph3D: React.FC = () => {
             <label>
                 <input ref={graph3DPlayAnimationRef} type="checkbox" /> Запуск анимации
             </label>
+            <label>
+                Выбор формы:
+                <select onChange={(e) => updateScene(e.target.value)}>
+                    <option value="sphere">Сфера</option>
+                    <option value="torus">Торус</option>
+                    <option value="Ellipsoid">Эллипсоид</option>
+                    <option value="EllipticalCylinder">Elliptical Cylinder</option>
+                    <option value="EllipticalParaboloid">Elliptical Paraboloid</option>
+                    <option value="HyperbolicParaboloid">Hyperbolic Paraboloid</option>
+                    <option value="cone">конус</option>
+                    <option value="HyperbolicCylinder">Hyperbolic Cylinder</option>
+                    <option value="OneWayHyperboloid">One Way Hyperboloid</option>
+                    <option value="cube">Cube</option>
+                    <option value="ParabolidCylinder">Parabolid Cylinder</option>
+                </select>
+            </label>
         </div>
     </>);
 };
-
 export default Graph3D;
